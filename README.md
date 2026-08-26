@@ -38,6 +38,7 @@ Reusable [agent skills](https://docs.claude.com/en/docs/claude-code/skills) unde
 | Skill | What it does |
 |-------|--------------|
 | [`upward-comms`](./skills/upward-comms) | Rewrite engineer-to-engineer content for engineering-org leadership (VPs, directors, PMs, release managers) and shape it for the channel: ticket comment, chat post, async standup, email, or meeting talking-points. Platform-agnostic, draft-only. |
+| [`write-ticket`](./skills/write-ticket) | Turn raw material (requirements, a client's bug report, meeting notes) into a paste-ready ticket that passes a Definition of Ready — classifies the work type, asks for gaps in one round, and outputs a title, description, and labels. Ships with the full ticket convention. |
 
 ### Install
 
