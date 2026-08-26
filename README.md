@@ -31,14 +31,14 @@ Open Claude Code in any project and it now follows these instructions. Re-run th
 
 ## Skills
 
-Reusable [agent skills](https://docs.claude.com/en/docs/claude-code/skills) under [`skills/`](./skills). Each is a directory with a `SKILL.md` that Claude loads on demand when your request matches it.
+Reusable [agent skills](https://docs.claude.com/en/docs/claude-code/skills) under [`skills/`](./skills), grouped into categories. Each skill is a directory with a `SKILL.md` that Claude loads on demand when your request matches it.
 
 ### Available
 
-| Skill | What it does |
-|-------|--------------|
-| [`upward-comms`](./skills/upward-comms) | Rewrite engineer-to-engineer content for engineering-org leadership (VPs, directors, PMs, release managers) and shape it for the channel: ticket comment, chat post, async standup, email, or meeting talking-points. Platform-agnostic, draft-only. |
-| [`write-ticket`](./skills/write-ticket) | Turn raw material (requirements, a client's bug report, meeting notes) into a paste-ready ticket that passes a Definition of Ready — classifies the work type, asks for gaps in one round, and outputs a title, description, and labels. Ships with the full ticket convention. |
+| Skill | Category | What it does |
+|-------|----------|--------------|
+| [`upward-comms`](./skills/workflow/upward-comms) | `workflow` | Rewrite engineer-to-engineer content for engineering-org leadership (VPs, directors, PMs, release managers) and shape it for the channel: ticket comment, chat post, async standup, email, or meeting talking-points. Platform-agnostic, draft-only. |
+| [`write-ticket`](./skills/workflow/write-ticket) | `workflow` | Turn raw material (requirements, a client's bug report, meeting notes) into a paste-ready ticket that passes a Definition of Ready — classifies the work type, asks for gaps in one round, and outputs a title, description, and labels. Ships with the full ticket convention. |
 
 ### Install
 
@@ -46,7 +46,7 @@ Copy a skill directory into your Claude Code skills folder — `~/.claude/skills
 
 ```bash
 git clone https://github.com/vilaphongdouangmala/vilaphong-skills.git
-cp -R vilaphong-skills/skills/upward-comms ~/.claude/skills/
+cp -R vilaphong-skills/skills/workflow/upward-comms ~/.claude/skills/
 ```
 
 Start a new Claude Code session and the skill is available.
