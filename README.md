@@ -11,7 +11,7 @@ Take whichever you want; the install steps for each are below.
 
 ## `CLAUDE.md` — global guidelines
 
-Behavioral instructions that reduce common LLM coding mistakes (think before coding, keep changes surgical, prefer simplicity). Adapted from [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md), with one added section on reading GitLab MCP attachments (§5).
+Behavioral instructions that reduce common LLM coding mistakes (think before coding, keep changes surgical, prefer simplicity). Adapted from [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md), with one added section on working with GitLab via the `glab` CLI (§6).
 
 Claude Code automatically reads `~/.claude/CLAUDE.md` and merges it into **every** project on your machine. Set it up once:
 

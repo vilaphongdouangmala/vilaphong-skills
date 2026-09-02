@@ -42,7 +42,19 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
-## 4. Goal-Driven Execution
+## 4. Concise Prose
+
+**In any prose under a repository — comments, docstrings, docs, commit messages — get to the point.**
+
+- Write the minimum that earns its place. Prefer fewer, higher-signal sentences.
+- Comment the *why* (intent, non-obvious constraints), not the *what* the code already says.
+- Don't narrate obvious code, restate the function name, or leave "step 1 / step 2" tour-guide comments.
+- No decorative banners, changelog notes, or "this function does X" preambles that duplicate the signature.
+- Match the surrounding comment density. If a file is sparse, stay sparse.
+
+The test: Would removing this sentence lose real information a reader can't get from the code?
+
+## 5. Goal-Driven Execution
 
 **Define success criteria. Loop until verified.**
 
@@ -64,16 +76,38 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
 
-## 5. Integration Specifics
+## 6. Integration Specifics
+### GitLab: use `glab`, not the MCP server
+
+All GitLab work goes through the `glab` CLI (authenticated to your host; check with
+`glab auth status`). It holds its own credentials, so no token handling is needed.
+
+- **Set a default host** with `glab config set --global host <your-gitlab-host>`, so bare
+  commands and `-R group/project` work from anywhere without extra flags. If you ever see
+  `401 Unauthorized` or `Unauthenticated.`, the default may have been reset to gitlab.com — check
+  `glab config get host` before suspecting the token. Prefix with `GITLAB_HOST=<your-gitlab-host>`
+  to override for a single command.
+- **The JSON flag is inconsistent between subcommands**: `issue list` uses `-O json`;
+  `issue view`, `mr view`, and `label list` use `-F json` (there `-F` means `--output-format`).
+- **Endpoints with no subcommand** (discussions, related MRs, work items, raw files, tags,
+  uploads) go through `glab api`. URL-encode the project path there (`group%2Fproject`);
+  with `-R` it stays literal.
+- **Multi-line bodies** (comments, issue descriptions) must be written to a file and passed as
+  `-f "body=$(cat <file>)"`. Use `-f` (raw string), not `-F` (magic type conversion). Inlining
+  markdown with backticks and newlines as a shell argument mangles it.
+- **Writes to descriptions and notes overwrite wholesale** — always read current content first.
+
 ### GitLab Attachments
 
-- The GitLab MCP doesn't have a tool for downloading uploads/attachments.
-- To download, use curl with the **API endpoint** (not the web URL):
+- To download, use the **API endpoint** (not the web URL):
+  ```bash
+  GITLAB_HOST=<your-gitlab-host> glab api \
+    "projects/<PROJECT_ID>/uploads/<HASH>/<FILENAME>" > <OUTPUT_FILE>
   ```
-  curl -sS --header "PRIVATE-TOKEN: $TOKEN" \
-    "https://<your-gitlab-host>/api/v4/projects/<PROJECT_ID>/uploads/<HASH>/<FILENAME>" \
-    -o <OUTPUT_FILE>
-  ```
-- The token is stored in `~/.claude.json` under `mcpServers.gitlab.env.GITLAB_TOKEN`.
-- The web URL format (`/<namespace>/<project>/uploads/...`) does NOT work with `PRIVATE-TOKEN` header — it expects session cookies.
-- To find the project ID from a URL like `/-/project/<ID>/uploads/...`, the ID is already in the URL. To find the project path, use the GitLab MCP `list_project_issues` or the API (`/api/v4/projects/<ID>`).
+- The web URL format (`/<namespace>/<project>/uploads/...`) does NOT work — it expects session cookies.
+- To find the project ID from a URL like `/-/project/<ID>/uploads/...`, the ID is already in the URL. To find the project path, use `glab api "projects/<ID>"`.
+- **Uploading** a file is the one case `glab` can't do: uploads are multipart and
+  `glab api -f "file=@path"` sends the path as a string (`{"error":"file is invalid"}`). Use
+  `curl --form "file=@<path>"` with the token read from `glab`'s config
+  (`~/Library/Application Support/glab-cli/config.yml`, under `hosts.<your-gitlab-host>.token`).
+  Uploads are permanent; GitLab has no delete-upload API.
