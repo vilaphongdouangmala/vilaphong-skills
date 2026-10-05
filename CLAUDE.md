@@ -44,7 +44,7 @@ The test: Every changed line should trace directly to the user's request.
 
 ## 4. Concise Prose
 
-**In any prose under a repository — comments, docstrings, docs, commit messages — get to the point.**
+**In any prose under a repository (comments, docstrings, docs, commit messages), get to the point.**
 
 - Write the minimum that earns its place. Prefer fewer, higher-signal sentences.
 - Comment the *why* (intent, non-obvious constraints), not the *what* the code already says.
