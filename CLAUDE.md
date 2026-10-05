@@ -74,86 +74,38 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## 6. Diagram the Code Path
 
-**A diagram always speaks better than paragraphs of text. When explaining how
-something flows, show it first, then narrate it.**
+**When explaining a flow (a feature, a request, a bug's fail path, a change's blast radius), lead with a diagram, then narrate.** Skip it when the change stays inside one function with no cross-component flow.
 
-Whenever you explain a code path (how a feature works, how a request is handled,
-where a bug's fail path runs, or what a proposed change touches), lead with a
-diagram of the components involved and how logic/data moves between them. Prose
-follows the diagram, not the other way around. If you find yourself writing
-three paragraphs to describe a flow, stop and draw it instead; the paragraphs
-usually collapse to a numbered list once the picture exists.
+Keep it clean:
+- **3-6 nodes**, only those on this path. More than that: split into two diagrams.
+- **One direction** (left-to-right or top-down), no crossing edges, max ~80 columns wide.
+- **Nodes**: short name, with the file/function on a second line inside the box.
+- **Edges**: label with what moves, max ~4 words (`POST /turns {sub}`, `emits Updated`).
+- **Delta markers**: suffix `+` new, `*` changed, `-` removed, with a one-line legend under the diagram. For a bug, mark where the path diverges with `✗`.
 
-What the diagram must do:
-- **Scope to the question.** Only the components on this path, not the whole
-  system. Aim for 3-8 nodes. If it needs more, split into two diagrams.
-- **Label the edges with what moves**, not just that something moves: the
-  payload, event, query, or return value (`POST /turns {sub}`, `sub[] -> name[]`,
-  `emits ConversationUpdated`).
-- **Mark what the change affects.** Tag nodes/edges as `[NEW]`, `[CHANGED]`, or
-  `[REMOVED]` so the reader sees the delta against the current flow at a glance.
-  For a bug, mark where the path diverges from the expected one.
-- **Anchor nodes to code.** Name the file (and function/class where useful) on
-  each node so the diagram doubles as a navigation map.
-- **Pick the shape that fits the question:**
-  - request/response across services or layers -> sequence diagram
-  - data transformation pipeline -> left-to-right flow of boxes
-  - lifecycle/status transitions -> state diagram
+Pick the shape:
+- across services/layers → sequence diagram
+- data transformation → left-to-right boxes
+- lifecycle/status → state diagram
 
-Format:
-- Answers in the terminal: ASCII/box-drawing in a fenced code block (Mermaid
-  does not render there).
-- Text going into the repo, an MR description, or an artifact: Mermaid, since
-  GitLab and artifact pages render it.
+Format: terminal → ASCII/box-drawing in a fenced block; repo, MR, or artifact → Mermaid.
 
-Then walk the prose in the same order as the diagram, numbering the steps so
-each sentence maps to an arrow. Keep that prose short: the diagram carries the
-structure, the text only adds what a box or arrow cannot (why, edge cases,
-constraints).
-
-Skip the diagram when the change is confined to one function in one file and
-there is no cross-component flow to show.
-
-The test: Could a reader who only sees the diagram name the components touched,
-what passes between them, and which parts are new or changed? And could you
-delete half the prose without losing information the diagram already shows?
-
----
-
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+Then number the prose steps to match the arrows. Only add what the diagram can't show (why, edge cases, constraints).
 
 ## 7. Integration Specifics
 ### GitLab: use `glab`, not the MCP server
 
-All GitLab work goes through the `glab` CLI (authenticated to your host; check with
-`glab auth status`). It holds its own credentials, so no token handling is needed.
+All GitLab work goes through `glab` (authenticated to your host, check with `glab auth status`); it holds its own credentials.
 
-- **Set a default host** with `glab config set --global host <your-gitlab-host>`, so bare
-  commands and `-R group/project` work from anywhere without extra flags. If you ever see
-  `401 Unauthorized` or `Unauthenticated.`, the default may have been reset to gitlab.com — check
-  `glab config get host` before suspecting the token. Prefix with `GITLAB_HOST=<your-gitlab-host>`
-  to override for a single command.
-- **The JSON flag is inconsistent between subcommands**: `issue list` uses `-O json`;
-  `issue view`, `mr view`, and `label list` use `-F json` (there `-F` means `--output-format`).
-- **Endpoints with no subcommand** (discussions, related MRs, work items, raw files, tags,
-  uploads) go through `glab api`. URL-encode the project path there (`group%2Fproject`);
-  with `-R` it stays literal.
-- **Multi-line bodies** (comments, issue descriptions) must be written to a file and passed as
-  `-f "body=$(cat <file>)"`. Use `-f` (raw string), not `-F` (magic type conversion). Inlining
-  markdown with backticks and newlines as a shell argument mangles it.
-- **Writes to descriptions and notes overwrite wholesale** — always read current content first.
+- **Set a default host** with `glab config set --global host <your-gitlab-host>`, so bare commands and `-R group/project` work anywhere. `401 Unauthorized` / `Unauthenticated.` means the default reset to gitlab.com: check `glab config get host`, or prefix `GITLAB_HOST=<your-gitlab-host>` for one command.
+- **JSON flag differs per subcommand**: `issue list` uses `-O json`; `issue view`, `mr view`, `label list` use `-F json` (`-F` = `--output-format` there).
+- **Endpoints with no subcommand** (discussions, related MRs, work items, raw files, tags, uploads): use `glab api` with the project path URL-encoded (`group%2Fproject`); with `-R` it stays literal.
+- **Multi-line bodies**: write to a file and pass `-f "body=$(cat <file>)"` (`-f` raw string, not `-F` type conversion). Inlined markdown gets mangled.
+- **Description and note writes overwrite wholesale**: read current content first.
+- **Assign MRs to me by default**: pass `--assignee @me` to `glab mr create` unless told otherwise.
+- **Download an attachment** via the API: `glab api "projects/<ID>/uploads/<HASH>/<FILENAME>" > <out>`. The web URL (`/<namespace>/<project>/uploads/...`) needs session cookies and fails. In `/-/project/<ID>/uploads/...` URLs the ID is already there; `glab api "projects/<ID>"` gives the path.
+- **Upload an attachment**: `glab` can't (multipart; `-f "file=@path"` sends the path as a string, `{"error":"file is invalid"}`). Use `curl --form "file=@<path>"` with the token from `glab`'s config (`~/Library/Application Support/glab-cli/config.yml`, under `hosts.<your-gitlab-host>.token`). Uploads are permanent (no delete API).
 
-### GitLab Attachments
+---
 
-- To download, use the **API endpoint** (not the web URL):
-  ```bash
-  GITLAB_HOST=<your-gitlab-host> glab api \
-    "projects/<PROJECT_ID>/uploads/<HASH>/<FILENAME>" > <OUTPUT_FILE>
-  ```
-- The web URL format (`/<namespace>/<project>/uploads/...`) does NOT work — it expects session cookies.
-- To find the project ID from a URL like `/-/project/<ID>/uploads/...`, the ID is already in the URL. To find the project path, use `glab api "projects/<ID>"`.
-- **Uploading** a file is the one case `glab` can't do: uploads are multipart and
-  `glab api -f "file=@path"` sends the path as a string (`{"error":"file is invalid"}`). Use
-  `curl --form "file=@<path>"` with the token read from `glab`'s config
-  (`~/Library/Application Support/glab-cli/config.yml`, under `hosts.<your-gitlab-host>.token`).
-  Uploads are permanent; GitLab has no delete-upload API.
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
