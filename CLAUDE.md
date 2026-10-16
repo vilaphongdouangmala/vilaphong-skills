@@ -74,23 +74,21 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## 6. Diagram the Code Path
 
-**When explaining a flow (a feature, a request, a bug's fail path, a change's blast radius), lead with a diagram, then narrate.** Skip it when the change stays inside one function with no cross-component flow.
+**Prefer visual explanations over lengthy textual descriptions when illustrating relationships between components.** 
 
-Keep it clean:
-- **3-6 nodes**, only those on this path. More than that: split into two diagrams.
-- **One direction** (left-to-right or top-down), no crossing edges, max ~80 columns wide.
-- **Nodes**: short name, with the file/function on a second line inside the box.
-- **Edges**: label with what moves, max ~4 words (`POST /turns {sub}`, `emits Updated`).
-- **Delta markers**: suffix `+` new, `*` changed, `-` removed, with a one-line legend under the diagram. For a bug, mark where the path diverges with `✗`.
+- Use monospaced ASCII diagrams inside fenced code blocks to preserve alignment.
+- Keep diagrams simple, short texts, readable, and logically structured.
+- Organize diagrams according to their purpose:
+   - Top-down: Request flows, processing pipelines, architecture.
+   - Left-to-right: Sequential operations, transformations.
+   - Hierarchical: Component trees, dependencies, ownership.
+   - Bidirectional: Communication between services.
+- Represent:
+   - Components using descriptive labels.
+   - Connections using lines (`|`, `-`, `+`).
+   - Direction using arrows (`v`, `^`, `>`, `<`).
+   - Branches using clearly aligned connectors.
 
-Pick the shape:
-- across services/layers → sequence diagram
-- data transformation → left-to-right boxes
-- lifecycle/status → state diagram
-
-Format: terminal → ASCII/box-drawing in a fenced block; repo, MR, or artifact → Mermaid.
-
-Then number the prose steps to match the arrows. Only add what the diagram can't show (why, edge cases, constraints).
 
 ## 7. Integration Specifics
 ### GitLab: use `glab`, not the MCP server
@@ -105,6 +103,10 @@ All GitLab work goes through `glab` (authenticated to your host, check with `gla
 - **Assign MRs to me by default**: pass `--assignee @me` to `glab mr create` unless told otherwise.
 - **Download an attachment** via the API: `glab api "projects/<ID>/uploads/<HASH>/<FILENAME>" > <out>`. The web URL (`/<namespace>/<project>/uploads/...`) needs session cookies and fails. In `/-/project/<ID>/uploads/...` URLs the ID is already there; `glab api "projects/<ID>"` gives the path.
 - **Upload an attachment**: `glab` can't (multipart; `-f "file=@path"` sends the path as a string, `{"error":"file is invalid"}`). Use `curl --form "file=@<path>"` with the token from `glab`'s config (`~/Library/Application Support/glab-cli/config.yml`, under `hosts.<your-gitlab-host>.token`). Uploads are permanent (no delete API).
+
+### Git
+
+- Name branches after the implemented change (e.g. no `claude/` prefix).
 
 ---
 
