@@ -47,7 +47,7 @@ The test: Every changed line should trace directly to the user's request.
 **In any prose under a repository (comments, docstrings, docs, commit messages), get to the point.**
 
 - Write the minimum that earns its place. Prefer fewer, higher-signal sentences.
-- Comment the *why* (intent, non-obvious constraints), not the *what* the code already says.
+- Code is the source of truth; a comment is a conveyor for what the code cannot carry: the *why* (intent, non-obvious constraints).
 - Don't narrate obvious code, restate the function name, or leave "step 1 / step 2" tour-guide comments.
 - No decorative banners, changelog notes, or "this function does X" preambles that duplicate the signature.
 - Match the surrounding comment density. If a file is sparse, stay sparse.
